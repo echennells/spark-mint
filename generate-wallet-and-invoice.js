@@ -18,11 +18,11 @@ async function generateWalletAndInvoice() {
     console.log('\n⚠️  SAVE THIS MNEMONIC!\n');
 
     // Step 2: Get addresses and current balance
-    const l1Address = await wallet.getTokenL1Address();
+    const staticDepositAddress = await wallet.getStaticDepositAddress();
     const sparkAddress = wallet.sparkAddress;
     const balance = await wallet.getBalance();
 
-    console.log('💰 Bitcoin Address:', l1Address);
+    console.log('💰 Bitcoin Deposit Address:', staticDepositAddress);
     console.log('⚡ Spark Address:', sparkAddress);
     console.log('📊 Current Balance:', balance.balance, 'sats');
 
@@ -43,7 +43,7 @@ async function generateWalletAndInvoice() {
       console.log('\n🚀 FUNDING OPTIONS:');
       console.log('1. Pay Lightning invoice above (3000 sats)');
       console.log('2. Send Spark sats to:', sparkAddress);
-      console.log('3. Send Bitcoin to:', l1Address);
+      console.log('3. Send Bitcoin to:', staticDepositAddress);
 
       console.log('\n📝 NEXT STEPS:');
       console.log('1. Fund the wallet using any option above');
@@ -53,7 +53,7 @@ async function generateWalletAndInvoice() {
       console.error('❌ Lightning invoice creation failed:', invoiceError.message);
       console.log('\n🔄 Alternative funding options:');
       console.log('   Send Spark sats to:', sparkAddress);
-      console.log('   Send Bitcoin to:', l1Address);
+      console.log('   Send Bitcoin to:', staticDepositAddress);
     }
 
   } catch (error) {
