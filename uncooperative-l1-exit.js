@@ -34,6 +34,11 @@ async function demonstrateUncooperativeExit() {
     console.log('💰 Balance:', Number(balance.balance), 'sats');
     console.log('');
 
+    // Get sparkClient for fetching parent nodes
+    const sparkClient = await wallet.connectionManager?.createSparkClient?.(
+      wallet.config?.getCoordinatorAddress?.() || "https://api.spark.info"
+    ).catch(() => undefined);
+
     // Query all leaves (funds) in the wallet
     console.log('🌿 Querying wallet leaves (UTXOs in Spark tree)...');
     const leaves = await wallet.getLeaves();
@@ -142,8 +147,8 @@ async function demonstrateUncooperativeExit() {
       // Construct the unilateral exit transactions
       const txChains = await constructUnilateralExitTxs(
         nodeHexStrings,
-        undefined, // No SparkClient needed if we have all parent data
-        undefined  // Network will be inferred
+        sparkClient,  // Pass SparkClient to fetch parent nodes
+        wallet.config?.getNetworkProto?.()  // Pass network
       );
 
       console.log('✅ Successfully constructed exit transaction chains!');

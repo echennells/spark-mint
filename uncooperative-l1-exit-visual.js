@@ -302,6 +302,12 @@ async function demonstrateUncooperativeExit() {
     const balance = await wallet.getBalance();
     console.log('💰 Balance:', Number(balance.balance), 'sats\n');
 
+    // Get sparkClient for fetching parent nodes
+    // Access the internal connectionManager (wallet._connectionManager or wallet.connectionManager)
+    const sparkClient = await wallet.connectionManager?.createSparkClient?.(
+      wallet.config?.getCoordinatorAddress?.() || "https://api.spark.info"
+    ).catch(() => undefined);
+
     console.log('🔍 Querying wallet leaves...');
     const leaves = await wallet.getLeaves();
 
@@ -329,8 +335,8 @@ async function demonstrateUncooperativeExit() {
 
         const txChains = await constructUnilateralExitTxs(
           [nodeHex],
-          undefined,
-          undefined
+          sparkClient,
+          wallet.config?.getNetworkProto?.()
         );
 
         if (txChains.length > 0) {
@@ -360,8 +366,8 @@ async function demonstrateUncooperativeExit() {
 
         const txChains = await constructUnilateralExitTxs(
           [nodeHex],
-          undefined,
-          undefined
+          sparkClient,
+          wallet.config?.getNetworkProto?.()
         );
 
         if (txChains.length > 0) {
@@ -396,8 +402,8 @@ async function demonstrateUncooperativeExit() {
 
       const txChains = await constructUnilateralExitTxs(
         nodeHexStrings,
-        undefined,
-        undefined
+        sparkClient,
+        wallet.config?.getNetworkProto?.()
       );
 
       simulateBroadcast(txChains);
