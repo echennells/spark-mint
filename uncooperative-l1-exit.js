@@ -36,7 +36,7 @@ async function demonstrateUncooperativeExit() {
 
     // Query all leaves (funds) in the wallet
     console.log('🌿 Querying wallet leaves (UTXOs in Spark tree)...');
-    const leaves = await wallet.queryLeaves();
+    const leaves = await wallet.getLeaves();
 
     if (!leaves || leaves.length === 0) {
       console.log('');
@@ -93,13 +93,14 @@ async function demonstrateUncooperativeExit() {
       let totalRefundable = 0n;
       for (let i = 0; i < leaves.length; i++) {
         const leaf = leaves[i];
+        const leafAmount = leaf.leafOutput?.amount ? BigInt(leaf.leafOutput.amount) : 0n;
         console.log(`  Leaf #${i + 1}:`);
-        console.log(`    ID: ${leaf.leafId}`);
-        console.log(`    Amount: ${Number(leaf.balance)} sats`);
-        console.log(`    Has refund tx: ${leaf.node?.refundTx ? '✅ Yes' : '❌ No'}`);
-        console.log(`    Timelock status: ${leaf.node?.sequence ? `Block ${leaf.node.sequence & 0xFFFF} (relative)` : 'Unknown'}`);
+        console.log(`    ID: ${leaf.id?.substring(0, 20)}...`);
+        console.log(`    Amount: ${Number(leafAmount)} sats`);
+        console.log(`    Has refund tx: ${leaf.refundTx ? '✅ Yes' : '❌ No'}`);
+        console.log(`    Timelock status: ${leaf.sequence ? `Block ${leaf.sequence & 0xFFFF} (relative)` : 'Unknown'}`);
         console.log('');
-        totalRefundable += BigInt(leaf.balance || 0);
+        totalRefundable += leafAmount;
       }
 
       console.log(`  💰 Total recoverable via uncooperative exit: ${Number(totalRefundable)} sats`);
@@ -122,12 +123,12 @@ async function demonstrateUncooperativeExit() {
       console.log('');
 
       // Convert leaves to TreeNode hex strings
-      const nodeHexStrings = [];
-      for (const leaf of leaves) {
-        if (leaf.node?.treeNodeHex) {
-          nodeHexStrings.push(leaf.node.treeNodeHex);
-        }
-      }
+      const { TreeNode } = await import('@buildonspark/spark-sdk/proto/spark');
+      const { bytesToHex } = await import('@noble/curves/utils');
+
+      const nodeHexStrings = leaves.map(leaf => {
+        return bytesToHex(TreeNode.encode(leaf).finish());
+      });
 
       if (nodeHexStrings.length === 0) {
         console.log('❌ No TreeNode data available for uncooperative exit');

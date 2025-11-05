@@ -303,7 +303,7 @@ async function demonstrateUncooperativeExit() {
     console.log('💰 Balance:', Number(balance.balance), 'sats\n');
 
     console.log('🔍 Querying wallet leaves...');
-    const leaves = await wallet.queryLeaves();
+    const leaves = await wallet.getLeaves();
 
     if (!leaves || leaves.length === 0) {
       console.log('\n⚠️  No leaves found. You need funds in Spark to demonstrate exit.');
@@ -320,25 +320,29 @@ async function demonstrateUncooperativeExit() {
       for (let i = 0; i < leaves.length; i++) {
         const leaf = leaves[i];
         console.log(`\n${'═'.repeat(70)}`);
-        console.log(`LEAF #${i + 1} - Balance: ${leaf.balance} sats`);
+        console.log(`LEAF #${i + 1} - ID: ${leaf.id?.substring(0, 20)}...`);
         console.log(`${'═'.repeat(70)}`);
 
-        if (leaf.node?.treeNodeHex) {
-          const txChains = await constructUnilateralExitTxs(
-            [leaf.node.treeNodeHex],
-            undefined,
-            undefined
-          );
+        // Encode the TreeNode to hex
+        const { TreeNode } = await import('@buildonspark/spark-sdk/proto/spark');
+        const nodeHex = bytesToHex(TreeNode.encode(leaf).finish());
 
-          if (txChains.length > 0) {
-            drawTransactionTree(txChains[0], leaf.balance);
+        const txChains = await constructUnilateralExitTxs(
+          [nodeHex],
+          undefined,
+          undefined
+        );
 
-            console.log('📊 TRANSACTION SUMMARY:');
-            console.log(`   Total transactions in chain: ${txChains[0].transactions.length}`);
-            console.log(`   Node transactions (no timelock): ${txChains[0].transactions.length - 1}`);
-            console.log(`   Refund transaction (timelocked): 1`);
-            console.log(`   Estimated total size: ${txChains[0].transactions.reduce((sum, tx) => sum + tx.length / 2, 0)} bytes`);
-          }
+        if (txChains.length > 0) {
+          // Calculate balance from leaf output
+          const leafBalance = leaf.leafOutput?.amount ? Number(leaf.leafOutput.amount) : 0;
+          drawTransactionTree(txChains[0], leafBalance);
+
+          console.log('📊 TRANSACTION SUMMARY:');
+          console.log(`   Total transactions in chain: ${txChains[0].transactions.length}`);
+          console.log(`   Node transactions (no timelock): ${txChains[0].transactions.length - 1}`);
+          console.log(`   Refund transaction (timelocked): 1`);
+          console.log(`   Estimated total size: ${txChains[0].transactions.reduce((sum, tx) => sum + tx.length / 2, 0)} bytes`);
         }
       }
     }
@@ -350,26 +354,28 @@ async function demonstrateUncooperativeExit() {
       for (let i = 0; i < Math.min(1, leaves.length); i++) { // Just show first leaf for clarity
         const leaf = leaves[i];
 
-        if (leaf.node?.treeNodeHex) {
-          const txChains = await constructUnilateralExitTxs(
-            [leaf.node.treeNodeHex],
-            undefined,
-            undefined
-          );
+        // Encode the TreeNode to hex
+        const { TreeNode } = await import('@buildonspark/spark-sdk/proto/spark');
+        const nodeHex = bytesToHex(TreeNode.encode(leaf).finish());
 
-          if (txChains.length > 0) {
-            const chain = txChains[0];
+        const txChains = await constructUnilateralExitTxs(
+          [nodeHex],
+          undefined,
+          undefined
+        );
 
-            console.log(`Analyzing ${chain.transactions.length} transactions in chain...\n`);
+        if (txChains.length > 0) {
+          const chain = txChains[0];
 
-            for (let j = 0; j < chain.transactions.length; j++) {
-              const isRefundTx = j === chain.transactions.length - 1;
-              const txType = isRefundTx ? '🎯 Refund' : `📤 Node ${j + 1}`;
-              analyzeTransaction(chain.transactions[j], txType);
+          console.log(`Analyzing ${chain.transactions.length} transactions in chain...\n`);
 
-              if (j < chain.transactions.length - 1) {
-                console.log('\n        ↓↓↓ Spends from above ↓↓↓\n');
-              }
+          for (let j = 0; j < chain.transactions.length; j++) {
+            const isRefundTx = j === chain.transactions.length - 1;
+            const txType = isRefundTx ? '🎯 Refund' : `📤 Node ${j + 1}`;
+            analyzeTransaction(chain.transactions[j], txType);
+
+            if (j < chain.transactions.length - 1) {
+              console.log('\n        ↓↓↓ Spends from above ↓↓↓\n');
             }
           }
         }
@@ -378,9 +384,10 @@ async function demonstrateUncooperativeExit() {
 
     // DRY RUN MODE: Simulate broadcasting
     if (mode === "dryrun") {
-      const nodeHexStrings = leaves
-        .filter(leaf => leaf.node?.treeNodeHex)
-        .map(leaf => leaf.node.treeNodeHex);
+      const { TreeNode } = await import('@buildonspark/spark-sdk/proto/spark');
+      const nodeHexStrings = leaves.map(leaf => {
+        return bytesToHex(TreeNode.encode(leaf).finish());
+      });
 
       if (nodeHexStrings.length === 0) {
         console.log('❌ No TreeNode data available');
@@ -407,7 +414,8 @@ async function demonstrateUncooperativeExit() {
 
       let totalRefundable = 0n;
       for (const leaf of leaves) {
-        totalRefundable += BigInt(leaf.balance || 0);
+        const leafAmount = leaf.leafOutput?.amount ? BigInt(leaf.leafOutput.amount) : 0n;
+        totalRefundable += leafAmount;
       }
 
       console.log(`💰 Total recoverable: ${Number(totalRefundable)} sats`);
