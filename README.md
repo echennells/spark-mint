@@ -2,10 +2,11 @@
 
 Clean, working scripts for creating and managing tokens on Spark network.
 
-This repository contains three main categories of functionality:
+This repository contains four main categories of functionality:
 1. **Bitcoin/Lightning → Spark L2 Onboarding** - Get funds onto Spark
 2. **Token Creation & Management** - Create and mint tokens (no funding required!)
-3. **Utility Scripts** - Helper functions for both workflows
+3. **L1 Recovery & Security** - Educational demo of uncooperative exit mechanisms
+4. **Utility Scripts** - Helper functions for all workflows
 
 ## Bitcoin/Lightning Onboarding Scripts
 
@@ -33,6 +34,35 @@ node claim-l1-deposit.js "your mnemonic" [optional-txid]
 - Automatically finds and claims Bitcoin deposits
 - Requires 3+ Bitcoin confirmations (~30 minutes)
 - Shows fees and net credit amount
+
+## L1 Recovery & Security Demo
+
+### `uncooperative-l1-exit.js`
+Educational demo showing how to recover funds even if Spark goes offline.
+
+```bash
+# Show information about uncooperative exit capability
+node uncooperative-l1-exit.js "your mnemonic" info
+
+# Prepare actual exit transactions
+node uncooperative-l1-exit.js "your mnemonic" prepare
+
+# Simulate what happens if Spark goes down
+node uncooperative-l1-exit.js "your mnemonic" simulate
+```
+
+**What it demonstrates:**
+- Pre-signed refund transactions with timelocks
+- FROST threshold signatures
+- Bitcoin tree structure for Layer 2 security
+- Trustless recovery even if Spark disappears
+
+**Key concepts:**
+- Relative timelocks (BIP 68 / OP_CSV)
+- Uncooperative exit requires waiting ~2000 blocks (2 weeks on mainnet)
+- All funds can be recovered to Bitcoin L1 without Spark cooperation
+
+📖 **See [L1-RECOVERY-EXPLAINED.md](L1-RECOVERY-EXPLAINED.md) for detailed technical explanation**
 
 ## Token Creation Scripts
 
@@ -112,12 +142,40 @@ Get Lightning funds onto Spark instantly:
 2. **Pay invoice:** Pay the Lightning invoice (3000 sats)
 3. **Check balance:** `node check-wallet-balance.js "mnemonic"` (funds appear instantly)
 
+### L1 Recovery Demo (Educational)
+
+Understand and demonstrate uncooperative exit mechanisms:
+
+1. **Have funds on Spark:** Complete Bitcoin L1 onboarding first
+2. **Check exit capability:** `node uncooperative-l1-exit.js "mnemonic" info`
+3. **View refund transactions:** `node uncooperative-l1-exit.js "mnemonic" prepare`
+4. **Simulate Spark offline:** `node uncooperative-l1-exit.js "mnemonic" simulate`
+5. **Read detailed docs:** See [L1-RECOVERY-EXPLAINED.md](L1-RECOVERY-EXPLAINED.md)
+
 ## Key Features
 
 - ✅ **No funding required for tokens** - Create and mint tokens with empty wallets!
 - ✅ **Bitcoin L1 → Spark L2 bridging** - Automatic deposit claiming
 - ✅ **Lightning payments** - Instant funding via Lightning Network
+- ✅ **Trustless L1 recovery** - Uncooperative exit via pre-signed refund transactions
 - ✅ **No Bitcoin fees on L2** - Operations are free on Spark L2
 - ✅ **3+ confirmation requirement** - Bitcoin deposits need confirmations
+- 🔒 **Security guarantees** - FROST threshold signatures + timelocks protect funds
 - ⚠️ **One token per wallet** - Each issuer can only create one token
+
+## Educational Value
+
+This repository now includes comprehensive educational materials on Layer 2 security:
+
+- **Uncooperative exit mechanisms** - How to recover funds without operator cooperation
+- **Timelock implementations** - BIP 68 relative timelocks (OP_CSV) in practice
+- **Threshold signatures** - FROST (Flexible Round-Optimized Schnorr Threshold)
+- **Pre-signed transactions** - Bitcoin script-level security guarantees
+- **Layer 2 trade-offs** - Speed vs security, cooperative vs uncooperative paths
+
+Perfect for:
+- 🎓 Blockchain courses and workshops
+- 🔍 Security researchers studying Layer 2 systems
+- 💻 Developers learning Bitcoin scripting
+- 📚 Anyone interested in trustless Layer 2 design
 
