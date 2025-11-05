@@ -37,7 +37,7 @@ node claim-l1-deposit.js "your mnemonic" [optional-txid]
 
 ## L1 Recovery & Security Demo
 
-### `uncooperative-l1-exit.js`
+### `uncooperative-l1-exit.js` (Basic Demo)
 Educational demo showing how to recover funds even if Spark goes offline.
 
 ```bash
@@ -51,18 +51,44 @@ node uncooperative-l1-exit.js "your mnemonic" prepare
 node uncooperative-l1-exit.js "your mnemonic" simulate
 ```
 
+### `uncooperative-l1-exit-visual.js` ⭐ (Enhanced Visual Demo)
+**NEW**: Advanced demo with transaction decoding, ASCII tree visualization, and dry-run simulation.
+
+```bash
+# Quick overview
+node uncooperative-l1-exit-visual.js "your mnemonic" info
+
+# ASCII tree visualization
+node uncooperative-l1-exit-visual.js "your mnemonic" visual
+
+# Deep transaction decode (shows timelocks, Taproot, scripts)
+node uncooperative-l1-exit-visual.js "your mnemonic" decode
+
+# Dry-run broadcast simulation (safe, nothing actually sent)
+node uncooperative-l1-exit-visual.js "your mnemonic" dryrun
+```
+
 **What it demonstrates:**
+- 🌳 ASCII tree visualization of transaction chains
+- 🔬 Bitcoin transaction internals (inputs, outputs, scripts)
+- ⏰ BIP 68 relative timelock decoding (shows the 2000-block wait)
+- 🔑 Taproot (P2TR) script analysis
+- ⚓ Ephemeral anchors for CPFP fee bumping
+- 🎭 Safe dry-run simulation (no actual broadcast)
 - Pre-signed refund transactions with timelocks
 - FROST threshold signatures
-- Bitcoin tree structure for Layer 2 security
 - Trustless recovery even if Spark disappears
 
 **Key concepts:**
 - Relative timelocks (BIP 68 / OP_CSV)
+- Taproot key-path vs script-path spending
+- Transaction tree structure
 - Uncooperative exit requires waiting ~2000 blocks (2 weeks on mainnet)
 - All funds can be recovered to Bitcoin L1 without Spark cooperation
 
-📖 **See [L1-RECOVERY-EXPLAINED.md](L1-RECOVERY-EXPLAINED.md) for detailed technical explanation**
+📖 **Documentation:**
+- [L1-RECOVERY-EXPLAINED.md](L1-RECOVERY-EXPLAINED.md) - Technical deep-dive
+- [VISUAL-DEMO-GUIDE.md](VISUAL-DEMO-GUIDE.md) - Teaching guide with examples
 
 ## Token Creation Scripts
 
