@@ -18,7 +18,7 @@ if (!mnemonic) {
 
 async function calculateExitFees() {
   console.log('💰 Spark Uncooperative Exit Fee Calculator');
-  console.log('═'.repeat(70));
+  console.log('-'.repeat(70));
   console.log(`Fee Rate: ${feeRate} sat/vbyte\n`);
 
   try {
@@ -47,7 +47,7 @@ async function calculateExitFees() {
 
     console.log(`✅ Found ${leaves.length} leaf/leaves\n`);
     console.log('🔍 Analyzing exit costs...\n');
-    console.log('═'.repeat(70));
+    console.log('-'.repeat(70));
 
     const { TreeNode } = await import('@buildonspark/spark-sdk/proto/spark');
 
@@ -124,7 +124,7 @@ async function calculateExitFees() {
       );
     }
 
-    console.log('═'.repeat(70));
+    console.log('-'.repeat(70));
     console.log('\n💵 TOTAL COST ANALYSIS:\n');
 
     console.log(`Total Value in Leaves:     ${totalValue.toLocaleString().padStart(10)} sats`);
@@ -145,7 +145,7 @@ async function calculateExitFees() {
     console.log(`Profitable Leaves:         ${profitableLeaves.toString().padStart(10)} ✅`);
     console.log(`Unprofitable Leaves:       ${unprofitableLeaves.toString().padStart(10)} ❌`);
 
-    console.log('\n═'.repeat(70));
+    console.log('\n-'.repeat(70));
     console.log('📈 FEE RATE COMPARISON:\n');
 
     const feeRates = [10, 30, 50, 100, 200];
@@ -167,7 +167,7 @@ async function calculateExitFees() {
       );
     }
 
-    console.log('\n═'.repeat(70));
+    console.log('\n-'.repeat(70));
     console.log('💡 RECOMMENDATIONS:\n');
 
     if (totalCost > Number(balance.balance)) {
@@ -201,7 +201,7 @@ async function calculateExitFees() {
     console.log('      Merge small leaves into larger ones');
     console.log('      Reduces total transaction count for future exits\n');
 
-    console.log('═'.repeat(70));
+    console.log('-'.repeat(70));
     console.log('\n🎓 KEY INSIGHT:\n');
     console.log('Uncooperative exit is EXPENSIVE by design. This creates economic');
     console.log('incentives to use the cooperative path, which is cheaper and faster.');

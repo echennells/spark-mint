@@ -11,7 +11,7 @@ if (!mnemonic) {
 
 async function showDepositInfo() {
   console.log('💰 Deposit Information\n');
-  console.log('═'.repeat(70), '\n');
+  console.log('-'.repeat(70), '\n');
 
   try {
     const { wallet } = await IssuerSparkWallet.initialize({
@@ -79,13 +79,13 @@ async function showDepositInfo() {
       }
     }
 
-    console.log('═'.repeat(70));
+    console.log('-'.repeat(70));
     console.log('\n💡 FOR UNCOOPERATIVE EXIT TEST AT 0.15 SAT/VBYTE:\n');
     console.log('   Current balance: 3,000 sats');
     console.log('   Exit cost: 7,860 sats');
     console.log('   Need to deposit: ~5,000 sats minimum');
     console.log('   Recommended: 7,000-12,000 sats for buffer\n');
-    console.log('═'.repeat(70));
+    console.log('-'.repeat(70));
 
   } catch (error) {
     console.error('\n❌ Error:', error.message);

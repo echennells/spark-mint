@@ -17,7 +17,7 @@ if (!mnemonic) {
 async function validateFeeMath() {
   console.log('🧮 VALIDATING FEE CALCULATION MATH\n');
   console.log('Fee Rate: ' + feeRate + ' sat/vbyte\n');
-  console.log('═'.repeat(70));
+  console.log('-'.repeat(70));
 
   const { wallet } = await IssuerSparkWallet.initialize({
     mnemonicOrSeed: mnemonic,
@@ -38,9 +38,9 @@ async function validateFeeMath() {
   );
 
   // Analyze FIRST leaf in detail
-  console.log('═'.repeat(70));
+  console.log('-'.repeat(70));
   console.log('📍 DETAILED ANALYSIS OF LEAF #1:');
-  console.log('═'.repeat(70));
+  console.log('-'.repeat(70));
 
   const firstLeaf = leaves[0];
   const leafValue = Number(firstLeaf.value || 0n);
@@ -91,9 +91,9 @@ async function validateFeeMath() {
               leafValue >= Math.ceil(totalBytes * feeRate) ? '✅' : '❌');
 
   // Now do ALL leaves
-  console.log('\n\n═'.repeat(70));
+  console.log('\n\n-'.repeat(70));
   console.log('📊 ALL LEAVES SUMMARY:');
-  console.log('═'.repeat(70));
+  console.log('-'.repeat(70));
 
   let grandTotalBytes = 0;
   let grandTotalValue = 0;
@@ -143,9 +143,9 @@ async function validateFeeMath() {
     (grandTotalValue >= grandTotalCost ? '✅' : '❌')
   );
 
-  console.log('\n\n═'.repeat(70));
+  console.log('\n\n-'.repeat(70));
   console.log('🔢 FINAL CALCULATION:');
-  console.log('═'.repeat(70));
+  console.log('-'.repeat(70));
   console.log('');
   console.log('Total value in wallet:       ', grandTotalValue, 'sats');
   console.log('Total bytes to broadcast:    ', grandTotalBytes, 'bytes');
