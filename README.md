@@ -90,6 +90,37 @@ node uncooperative-l1-exit-visual.js "your mnemonic" dryrun
 - [L1-RECOVERY-EXPLAINED.md](L1-RECOVERY-EXPLAINED.md) - Technical deep-dive
 - [VISUAL-DEMO-GUIDE.md](VISUAL-DEMO-GUIDE.md) - Teaching guide with examples
 
+### `backup-exit-data.js` ⚠️ (Critical for True Uncooperative Exit)
+**IMPORTANT**: Backs up parent node data needed for uncooperative exit if Spark goes offline.
+
+```bash
+# Backup to default directory (./spark-exit-backup)
+node backup-exit-data.js "your mnemonic"
+
+# Backup to custom location
+node backup-exit-data.js "your mnemonic" "/path/to/backup"
+```
+
+**Why you need this:**
+- 🚨 Your wallet stores leaf transactions, but NOT parent node data
+- 🚨 Without parent data, you cannot recover if Spark goes down
+- 🚨 Parent data must be downloaded from Spark servers while they're online
+
+**When to backup:**
+- ✅ After depositing Bitcoin (use `claim-l1-deposit.js`)
+- ✅ After receiving funds from others
+- ✅ Monthly (recommended)
+- ❌ NOT needed after sending funds
+
+**What gets saved:**
+- Complete transaction chains (root → intermediate → leaf → refund)
+- All data needed to broadcast recovery without Spark's help
+- Encrypted storage recommended
+
+📖 **Critical Reading**: [BACKUP-STRATEGY.md](BACKUP-STRATEGY.md) - Complete backup guide
+
+⚠️ **Security Model**: The pre-signed refund transactions guarantee you CAN exit, but only if you have the parent node data. Either Spark must provide it, or you must have backed it up. This is a **data availability** requirement, not a trust requirement.
+
 ## Token Creation Scripts
 
 ### `completely-fresh-token.js`
