@@ -61,7 +61,7 @@ async function calculateExitFees() {
 
     for (let i = 0; i < leaves.length; i++) {
       const leaf = leaves[i];
-      const leafBalance = leaf.leafOutput?.amount ? Number(leaf.leafOutput.amount) : 0;
+      const leafBalance = Number(leaf.value || 0n); // SDK uses leaf.value for balance
 
       const nodeHex = bytesToHex(TreeNode.encode(leaf).finish());
 
