@@ -25,7 +25,7 @@ async function consolidateLeaves() {
     },
   });
 
-  const address = wallet.getWalletAddress();
+  const address = await wallet.getSparkAddress();
   console.log('📱 Wallet Address:', address);
 
   // Get current state
