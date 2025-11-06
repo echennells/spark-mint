@@ -3,14 +3,18 @@
 import { IssuerSparkWallet } from "@buildonspark/issuer-sdk";
 
 const mnemonic = process.argv[2];
+const waitSeconds = parseInt(process.argv[3]) || 10;
 
 if (!mnemonic) {
-  console.log('Usage: node claim-pending-transfers.js "your mnemonic phrase"');
+  console.log('Usage: node claim-pending-transfers.js "your mnemonic phrase" [wait-seconds]');
+  console.log('');
+  console.log('The wallet auto-claims transfers when initialized.');
+  console.log('This script just waits for the wallet to sync and shows the result.');
   process.exit(1);
 }
 
-async function claimPendingTransfers() {
-  console.log('🔍 Checking for Pending Transfers\n');
+async function checkWalletAfterClaim() {
+  console.log('🔍 Waiting for Wallet to Sync and Auto-Claim Transfers\n');
 
   const { wallet } = await IssuerSparkWallet.initialize({
     mnemonicOrSeed: mnemonic,
@@ -22,79 +26,50 @@ async function claimPendingTransfers() {
   const address = await wallet.getSparkAddress();
   console.log('📱 Wallet Address:', address);
 
-  // Get current state before claiming
-  const leavesBefore = await wallet.getLeaves();
-  const balanceBefore = await wallet.getBalance();
-  console.log(`📋 Current Leaves: ${leavesBefore.length}`);
-  console.log(`💰 Current Balance: ${balanceBefore.balance} sats\n`);
+  console.log(`⏳ Waiting ${waitSeconds} seconds for auto-claim to process...\n`);
 
-  // Check for pending transfers
-  console.log('🔎 Looking for pending transfers...');
+  // Wait for the wallet to auto-claim (it does this automatically)
+  await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
 
-  try {
-    // Get all transfers (this should include pending ones)
-    const transfers = await wallet.getTransfers();
+  // Check current state
+  const leaves = await wallet.getLeaves();
+  const balance = await wallet.getBalance();
 
-    if (!transfers || transfers.length === 0) {
-      console.log('⚠️  No transfers found.');
-      return;
-    }
+  console.log('📊 CURRENT STATE:');
+  console.log('─────────────────────────────────');
+  console.log(`Leaves:  ${leaves.length}`);
+  console.log(`Balance: ${balance.balance} sats`);
+  console.log('─────────────────────────────────\n');
 
-    console.log(`📬 Found ${transfers.length} transfer(s)\n`);
+  // Calculate optimal for comparison
+  const optimalLeaves = balance.balance.toString(2).split('1').length - 1;
+  console.log(`💡 Optimal for ${balance.balance} sats: ${optimalLeaves} leaves (binary representation)\n`);
 
-    // Try to claim any pending transfers
-    let claimedCount = 0;
-    for (const transfer of transfers) {
-      console.log(`Checking transfer: ${transfer.id}`);
-      console.log(`  Status: ${transfer.status || 'unknown'}`);
-      console.log(`  Amount: ${transfer.totalValue || 0} sats`);
+  if (leaves.length === optimalLeaves) {
+    console.log('🎉 OPTIMIZED! Your wallet is at the theoretical minimum!');
+  } else if (leaves.length < 10) {
+    console.log('✅ Good consolidation! Wallet is reasonably optimized.');
+  } else if (leaves.length < 18) {
+    console.log('⚠️  Partial consolidation. May need more time or another consolidation cycle.');
+  } else {
+    console.log('❌ No consolidation yet. The transfer may still be pending.');
+    console.log('   Try running the consolidate-leaves.js script again,');
+    console.log('   or wait longer and run this script again with more wait time:');
+    console.log(`   node claim-pending-transfers.js "mnemonic" 30`);
+  }
 
-      try {
-        // Attempt to claim
-        console.log('  Attempting to claim...');
-        await wallet.claimTransfers();
-        claimedCount++;
-        console.log('  ✅ Claimed successfully\n');
-      } catch (error) {
-        console.log(`  ℹ️  ${error.message}\n`);
-      }
-    }
+  console.log('\n📋 Leaf breakdown:');
+  const valueGroups = {};
+  for (const leaf of leaves) {
+    const value = Number(leaf.value || 0n);
+    valueGroups[value] = (valueGroups[value] || 0) + 1;
+  }
 
-    if (claimedCount > 0) {
-      // Wait for processing
-      console.log('⏳ Waiting for claims to process...');
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // Check new state
-      const leavesAfter = await wallet.getLeaves();
-      const balanceAfter = await wallet.getBalance();
-
-      console.log('\n📊 RESULTS:');
-      console.log('─────────────────────────────────');
-      console.log(`Leaves Before: ${leavesBefore.length}`);
-      console.log(`Leaves After:  ${leavesAfter.length}`);
-      console.log(`Balance:       ${balanceAfter.balance} sats`);
-      console.log('─────────────────────────────────');
-
-      if (leavesAfter.length < leavesBefore.length) {
-        console.log(`\n🎉 Success! Reduced from ${leavesBefore.length} to ${leavesAfter.length} leaves.`);
-        console.log(`   That's ${leavesBefore.length - leavesAfter.length} fewer leaves (${Math.round((1 - leavesAfter.length/leavesBefore.length) * 100)}% reduction)`);
-      } else if (leavesAfter.length > leavesBefore.length) {
-        console.log(`\n⚠️  Leaves increased to ${leavesAfter.length}. Transfer was claimed but not yet optimized.`);
-        console.log('   Spark may optimize automatically, or wait and try consolidation again.');
-      } else {
-        console.log(`\n⚠️  No change in leaf count yet.`);
-      }
-    } else {
-      console.log('\nℹ️  No new transfers to claim.');
-    }
-
-  } catch (error) {
-    console.error('\n❌ Error:', error.message);
-    if (error.context) {
-      console.error('   Context:', error.context);
-    }
+  const sortedValues = Object.keys(valueGroups).map(Number).sort((a, b) => b - a);
+  for (const value of sortedValues) {
+    const count = valueGroups[value];
+    console.log(`  ${value.toString().padStart(6)} sats × ${count}`);
   }
 }
 
-claimPendingTransfers().catch(console.error);
+checkWalletAfterClaim().catch(console.error);
